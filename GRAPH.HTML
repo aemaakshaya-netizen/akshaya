@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wellness Logs — Charts</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:20px;background:#f7fafc;color:#111}
+    .container{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between}
+    h1{font-size:1.4rem;margin:0}
+    .controls{margin:12px 0;display:flex;gap:8px;align-items:center}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+    .card{background:white;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
+    canvas{max-height:360px}
+    footer{margin-top:18px;font-size:0.9rem;color:#444}
+    label{font-weight:600}
+    select,input{padding:6px 8px;border-radius:6px;border:1px solid #ddd}
+    @media (max-width:800px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Student Wellness Logs — Visual Dashboard</h1>
+      <div>Wellness + Finance Manager</div>
+    </header>
+
+    <div class="controls">
+      <label for="student">Student:</label>
+      <input id="student" placeholder="e.g. Ravi" />
+      <button id="load">Load Data</button>
+      <small style="margin-left:8px;color:#666">(Fetches <code>/api/wellness/logs?student=&lt;name&gt;</code>)</small>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Sleep Hours (Last entries)</h3>
+        <canvas id="sleepChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Stress Level (Numeric proxy)</h3>
+        <canvas id="stressChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Study vs Exercise (Stacked Bars)</h3>
+        <canvas id="activityChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Financial Stress Distribution</h3>
+        <canvas id="financePie"></canvas>
+      </div>
+    </div>
+
+    <footer>
+      Tip: If you don't have a backend, the page will render sample data so you can see how charts look. To integrate, expose a JSON endpoint at <code>/api/wellness/logs?student=&lt;name&gt;</code> returning an array of objects: <code>{date, sleep_hours, stress_level, study_hours, exercise_minutes, financial_stress}</code>.
+    </footer>
+  </div>
+
+<script>
+// --- helper: sample data fallback ---
+const sampleData = [
+  {date: '2025-09-07', sleep_hours:7.5, stress_level:'Low', study_hours:4, exercise_minutes:30, financial_stress:'Low'},
+  {date: '2025-09-08', sleep_hours:6.0, stress_level:'Medium', study_hours:6, exercise_minutes:10, financial_stress:'Medium'},
+  {date: '2025-09-09', sleep_hours:5.5, stress_level:'High', study_hours:8, exercise_minutes:5, financial_stress:'High'},
+  {date: '2025-09-10', sleep_hours:7.0, stress_level:'Medium', study_hours:5, exercise_minutes:20, financial_stress:'Medium'},
+  {date: '2025-09-11', sleep_hours:8.0, stress_level:'Low', study_hours:3.5, exercise_minutes:40, financial_stress:'Low'},
+  {date: '2025-09-12', sleep_hours:6.5, stress_level:'Medium', study_hours:7, exercise_minutes:15, financial_stress:'Medium'}
+];
+
+// Map stress text to numeric for charting
+const stressMapping = { 'low':3, 'medium':6, 'high':9 };
+const financeMapping = { 'low':1, 'medium':2, 'high':3 };
+
+let sleepChart, stressChart, activityChart, financePie;
+
+function prepareDatasets(logs){
+  // sort by date ascending
+  logs.sort((a,b)=> new Date(a.date) - new Date(b.date));
+  const labels = logs.map(l=> l.date);
+  const sleep = logs.map(l=> Number(l.sleep_hours));
+  const stress = logs.map(l=> stressMapping[(l.stress_level||'').toLowerCase()] || null);
+  const study = logs.map(l=> Number(l.study_hours || 0));
+  const exercise = logs.map(l=> Number(l.exercise_minutes || 0));
+  const financeCats = {}; // count financial stress
+  logs.forEach(l=>{
+    const k = (l.financial_stress||'Unknown');
+    financeCats[k] = (financeCats[k]||0) + 1;
+  });
+  return {labels, sleep, stress, study, exercise, financeCats};
+}
+
+function createOrUpdateCharts(data){
+  const ctxSleep = document.getElementById('sleepChart').getContext('2d');
+  const ctxStress = document.getElementById('stressChart').getContext('2d');
+  const ctxActivity = document.getElementById('activityChart').getContext('2d');
+  const ctxFinance = document.getElementById('financePie').getContext('2d');
+
+  // destroy previous instances if exist (for hot reload)
+  [sleepChart, stressChart, activityChart, financePie].forEach(c=>{ if(c) c.destroy && c.destroy(); });
+
+  sleepChart = new Chart(ctxSleep, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Sleep hours',
+        data: data.sleep,
+        tension: 0.25,
+        fill: true
+      }]
+    },
+    options: {responsive:true, plugins:{legend:{display:true}}}
+  });
+
+  stressChart = new Chart(ctxStress, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{label:'Stress (proxy 1-10)', data: data.stress}]
+    },
+    options: {responsive:true, scales:{y:{min:0,max:10}}}
+  });
+
+  activityChart = new Chart(ctxActivity, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets:[
+        {label:'Study hours', data: data.study, stack: 'stack1'},
+        {label:'Exercise minutes (scaled/60)', data: data.exercise.map(x=> x/60), stack: 'stack1'}
+      ]
+    },
+    options:{responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true}}}
+  });
+
+  const financeLabels = Object.keys(data.financeCats);
+  const financeValues = financeLabels.map(k=> data.financeCats[k]);
+  financePie = new Chart(ctxFinance, {
+    type: 'pie',
+    data:{labels: financeLabels, datasets:[{data: financeValues}]},
+    options:{responsive:true}
+  });
+}
+
+async function loadAndRender(student){
+  let logs = [];
+  try{
+    const resp = await fetch(`/api/wellness/logs?student=${encodeURIComponent(student)}`);
+    if(!resp.ok) throw new Error('No backend or 404');
+    logs = await resp.json();
+    // expect array of objects; if object has 'rows' field, try to normalize
+    if(!Array.isArray(logs) && logs.rows) logs = logs.rows;
+    if(!Array.isArray(logs) || logs.length===0) throw new Error('No logs');
+  }catch(e){
+    console.warn('Using sample data due to:', e.message);
+    logs = sampleData;
+  }
+
+  const prepared = prepareDatasets(logs);
+  createOrUpdateCharts(prepared);
+}
+
+// bind UI
+document.getElementById('load').addEventListener('click', ()=>{
+  const student = document.getElementById('student').value.trim() || 'Ravi';
+  loadAndRender(student);
+});
+
+// initial render with sample
+loadAndRender('Ravi');
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Student Finance Manager - Image Creation</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f9fafb; padding:20px; }
+    .box { background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); max-width:600px; margin:auto; text-align:center; }
+    canvas { border:1px solid #ddd; margin-top:12px; }
+    button { margin-top:12px; padding:8px 14px; background:#2563eb; color:white; border:none; border-radius:6px; cursor:pointer; }
+    button:hover { background:#1d4ed8; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Student Finance Manager — Image Demo</h2>
+    <p>This draws a finance-related image dynamically on a canvas.</p>
+    
+    <!-- Static Image Example -->
+    <img src="download.APP.JPG" alt="Student Finance Logo" width="120">
+
+    <!-- Dynamic Canvas Drawing -->
+    <canvas id="financeCanvas" width="400" height="200"></canvas>
+    <br>
+    <button onclick="downloadImage()">Download as PNG</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("financeCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Draw background
+    ctx.fillStyle = "#e0f2fe";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title text
+    ctx.fillStyle = "#111827";
+    ctx.font = "20px Arial";
+    ctx.fillText("Student Finance Manager", 80, 40);
+
+    // Draw piggy bank
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(200, 120, 50, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#111827";
+    ctx.font = "18px Arial";
+    ctx.fillText("💰", 185, 125);
+
+    // Draw growth arrow
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(80, 160);
+    ctx.lineTo(150, 100);
+    ctx.lineTo(220, 140);
+    ctx.lineTo(300, 60);
+    ctx.stroke();
+
+    // Download as PNG
+    function downloadImage() {
+      const link = document.createElement("a");
+      link.download = "student_finance_image.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+  </script>
+</body>
+</html>

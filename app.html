@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Finance Manager</title>
+   <link rel="stylesheet" href="style.css">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#4f46e5;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial; margin:0;background:linear-gradient(180deg,#071024 0%, #081226 100%);color:#e6eef8;min-height:100vh;padding:28px}
+    .container{max-width:1100px;margin:0 auto}
+    h1{font-size:20px;margin:0 0 12px}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .muted{color:var(--muted);font-size:13px}
+    .students-list{max-height:420px;overflow:auto;margin-top:8px}
+    .student-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;cursor:pointer}
+    .student-row:hover{background:var(--glass)}
+    .selected{background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(79,70,229,0.06));border:1px solid rgba(79,70,229,0.18)}
+    .small{font-size:12px}
+    .row{display:flex;gap:8px}
+    .actions{display:flex;gap:8px;margin-top:8px}
+    .btn{cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),#7c3aed);border:none;color:white}
+    .summary{display:flex;gap:10px;align-items:center;margin-top:8px}
+    .pill{background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
+    .income{color:#10b981}
+    .expense{color:#ef4444}
+    .tools{display:flex;gap:8px;flex-wrap:wrap}
+    .import-input{display:none}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr;}
+      .card{padding:12px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Finance Manager</h1>
+    <div class="grid">
+      <div class="card" id="left">
+        <div>
+          <label>New student — ID (unique)</label>
+          <input id="studentId" placeholder="e.g. S001" />
+          <label style="margin-top:8px">Name</label>
+          <input id="studentName" placeholder="e.g. Alison Heck" />
+          <div class="actions">
+            <button class="btn primary" id="addStudentBtn">Add student</button>
+            <button class="btn" id="clearStudentsBtn">Clear all</button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="row" style="align-items:center;justify-content:space-between">
+            <div class="muted">Students</div>
+            <div class="muted small" id="studentsCount">0</div>
+          </div>
+          <div class="students-list" id="studentsList"></div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="muted">Data</div>
+          <div class="tools" style="margin-top:8px">
+            <button class="btn" id="exportBtn">Export JSON</button>
+            <label class="btn" style="border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;cursor:pointer">
+              Import JSON
+              <input type="file" id="importFile" class="import-input" accept="application/json" />
+            </label>
+            <button class="btn" id="resetBtn">Reset storage</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="right">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="muted">Selected student</div>
+            <div id="selectedTitle" style="font-weight:600;margin-top:6px">(none)</div>
+          </div>
+          <div class="summary" id="selectedSummary" style="min-width:180px;justify-content:flex-end"></div>
+        </div>
+
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end">
+          <div>
+            <label>Type</label>
+            <select id="txType">
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div>
+            <label>Amount</label>
+            <input id="txAmount" placeholder="e.g. 1500" type="number" step="0.01" />
+          </div>
+          <div style="grid-column:1/3">
+            <label>Description</label>
+            <input id="txDesc" placeholder="e.g. Tuition fee" />
+          </div>
+          <div>
+            <label>Date</label>
+            <input id="txDate" type="date" />
+          </div>
+          <div style="grid-column:1/3;display:flex;gap:8px;margin-top:6px">
+            <button class="btn primary" id="addTxBtn">Add transaction</button>
+            <button class="btn" id="clearTxBtn">Clear</button>
+          </div>
+        </div>
+
+        <div id="noSelection" class="muted" style="margin-top:14px">Select a student to see transactions and balance.</div>
+
+        <div id="txTableWrap" style="display:none;margin-top:14px">
+          <table id="txTable">
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Action</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <footer>
+          Tip: data is stored locally in your browser using localStorage. Use Export/Import to move data between devices.
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple single-file Student Finance Manager
+    const STORAGE_KEY = 'sfm_data_v1';
+
+    let data = { students: {} };
+    let selectedId = null;
+
+    // DOM
+    const studentIdInput = document.getElementById('studentId');
+    const studentNameInput = document.getElementById('studentName');
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    const studentsList = document.getElementById('studentsList');
+    const studentsCount = document.getElementById('studentsCount');
+    const selectedTitle = document.getElementById('selectedTitle');
+    const selectedSummary = document.getElementById('selectedSummary');
+    const txType = document.getElementById('txType');
+    const txAmount = document.getElementById('txAmount');
+    const txDesc = document.getElementById('txDesc');
+    const txDate = document.getElementById('txDate');
+    const addTxBtn = document.getElementById('addTxBtn');
+    const txTableWrap = document.getElementById('txTableWrap');
+    const txTableBody = document.querySelector('#txTable tbody');
+    const noSelection = document.getElementById('noSelection');
+    const exportBtn = document.getElementById('exportBtn');
+    const importFile = document.getElementById('importFile');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearStudentsBtn = document.getElementById('clearStudentsBtn');
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    function load() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try{ data = JSON.parse(raw); }catch(e){ console.warn('Failed parse',e); data={students:{}} }
+      }
+    }
+
+    function formatMoney(n){ return Number(n).toFixed(2); }
+
+    function renderStudents(){
+      studentsList.innerHTML = '';
+      const ids = Object.keys(data.students).sort();
+      studentsCount.textContent = ids.length;
+      if(ids.length===0){ studentsList.innerHTML = '<div class="muted small" style="padding:8px">No students yet.</div>'; return }
+      ids.forEach(id => {
+        const s = data.students[id];
+        const row = document.createElement('div');
+        row.className = 'student-row' + (selectedId===id? ' selected':'');
+        row.innerHTML = `<div style="min-width:0">
+            <div style="font-weight:600">${escapeHtml(s.name)}</div>
+            <div class="muted small">${escapeHtml(id)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pill small">Balance: <strong>${formatMoney(calcBalance(s))}</strong></div>
+            <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end">
+              <button class="btn small" data-action="select" data-id="${id}">Open</button>
+              <button class="btn small" data-action="delete" data-id="${id}">Delete</button>
+            </div>
+          </div>`;
+        studentsList.appendChild(row);
+      });
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]); }
+
+    function calcBalance(student){
+      return (student.transactions||[]).reduce((acc,t)=> acc + (t.type==='income'? Number(t.amount): -Number(t.amount)), 0);
+    }
+
+    function selectStudent(id){
+      selectedId = id;
+      const s = data.students[id];
+      if(!s){ selectedTitle.textContent='(none)'; selectedSummary.innerHTML=''; txTableWrap.style.display='none'; noSelection.style.display='block'; renderStudents(); return }
+      selectedTitle.textContent = `${s.name} — ${id}`;
+      selectedSummary.innerHTML = `<div class="pill">Balance: <strong>${formatMoney(calcBalance(s))}</strong></div><div class="pill">Tx: ${ (s.transactions||[]).length }</div>`;
+      noSelection.style.display='none';
+      txTableWrap.style.display='block';
+      renderTxTable(s);
+      renderStudents();
+    }
+
+    function renderTxTable(student){
+      txTableBody.innerHTML='';
+      const txs = (student.transactions||[]).slice().reverse();
+      if(txs.length===0){ txTableBody.innerHTML = '<tr><td colspan="6" class="muted small">No transactions yet.</td></tr>'; return }
+      txs.forEach((t,i)=>{
+        const tr = document.createElement('tr');
+        const idx = txs.length - i; // 1-based
+        tr.innerHTML = `
+          <td>${idx}</td>
+          <td>${escapeHtml(t.date||'')}</td>
+          <td>${escapeHtml(t.description||'')}</td>
+          <td class="${t.type==='income'? 'income':'expense'}">${t.type}</td>
+          <td>${t.type==='income'? '+' : '-'}${formatMoney(t.amount)}</td>
+          <td><button class="btn small" data-action="del-tx" data-ts="${t._id}">Delete</button></td>
+        `;
+        txTableBody.appendChild(tr);
+      });
+    }
+
+    function addStudent(){
+      const id = studentIdInput.value.trim();
+      const name = studentNameInput.value.trim();
+      if(!id || !name){ alert('Provide both ID and name'); return }
+      if(data.students[id]){ alert('Student ID exists'); return }
+      data.students[id] = { id, name, transactions: [] };
+      save();
+      studentIdInput.value=''; studentNameInput.value='';
+      renderStudents();
+      selectStudent(id);
+    }
+
+    function deleteStudent(id){
+      if(!confirm('Delete student and all transactions?')) return;
+      delete data.students[id];
+      if(selectedId===id) selectedId = null;
+      save(); renderStudents(); selectStudent(selectedId);
+    }
+
+    function addTransaction(){
+      if(!selectedId){ alert('Select a student first'); return }
+      const student = data.students[selectedId];
+      const type = txType.value;
+      const amt = Number(txAmount.value);
+      const desc = txDesc.value.trim() || (type==='income'? 'Income' : 'Expense');
+      const date = txDate.value || new Date().toISOString().slice(0,10);
+      if(!amt || isNaN(amt) || amt<=0){ alert('Enter a valid amount (>0)'); return }
+      const tx = { _id: Math.random().toString(36).slice(2,9), type, amount: Number(amt.toFixed(2)), description: desc, date };
+      student.transactions = student.transactions || [];
+      student.transactions.push(tx);
+      save();
+      txAmount.value=''; txDesc.value=''; txDate.value='';
+      selectStudent(selectedId);
+    }
+
+    function deleteTx(studentId, txId){
+      const s = data.students[studentId];
+      if(!s) return;
+      s.transactions = (s.transactions||[]).filter(t=> t._id !== txId);
+      save(); selectStudent(studentId);
+    }
+
+    // Event delegation for students list
+    studentsList.addEventListener('click', e=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if(action==='select') selectStudent(id);
+      if(action==='delete') deleteStudent(id);
+    });
+
+    // Event delegation for tx table
+    txTableBody.addEventListener('click', e=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      const action = btn.dataset.action; const txid = btn.dataset.ts;
+      if(action==='del-tx'){ if(!selectedId) return; if(!confirm('Delete this transaction?')) return; deleteTx(selectedId, txid); }
+    });
+
+    addStudentBtn.addEventListener('click', addStudent);
+    addTxBtn.addEventListener('click', addTransaction);
+
+    exportBtn.addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(data, null, 2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'students_finance_export.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    importFile.addEventListener('change', e=>{
+      const f = e.target.files[0]; if(!f) return; const reader = new FileReader();
+      reader.onload = ev => {
+        try{
+          const imported = JSON.parse(ev.target.result);
+          if(imported && imported.students){ data = imported; save(); load(); renderStudents(); alert('Imported successfully'); }
+          else alert('Invalid file format');
+        }catch(err){ alert('Failed to parse JSON'); }
+      };
+      reader.readAsText(f);
+      e.target.value='';
+    });
+
+    resetBtn.addEventListener('click', ()=>{ if(confirm('Clear all saved data?')){ data = {students:{}}; save(); load(); renderStudents(); selectStudent(null); }});
+    clearStudentsBtn.addEventListener('click', ()=>{ if(confirm('Delete all students from this view?')){ data.students={}; save(); load(); renderStudents(); selectStudent(null); }});
+
+    // keyboard: enter in name field adds student
+    studentNameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addStudent(); });
+    txDesc.addEventListener('keydown', e=>{ if(e.key==='Enter') addTransaction(); });
+
+    // init
+    load(); renderStudents();
+
+    // preserve selection on reload (if present)
+    const preserved = Object.keys(data.students)[0] || null;
+    if(preserved) selectStudent(preserved);
+  </script>
+</body>
+</html>

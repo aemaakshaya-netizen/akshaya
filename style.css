@@ -1,0 +1,93 @@
+/* Student Finance Manager — External CSS
+   Save as: student-finance-manager.css
+   Link in your HTML: <link rel="stylesheet" href="student-finance-manager.css">
+*/
+:root{
+  --bg-0:#071024;
+  --bg-1:#081226;
+  --card:#0b1220;
+  --muted:#94a3b8;
+  --text:#e6eef8;
+  --accent-1:#4f46e5;
+  --accent-2:#7c3aed;
+  --glass:rgba(255,255,255,0.03);
+  --success:#10b981;
+  --danger:#ef4444;
+  --radius:12px;
+  --gap:18px;
+  --max-width:1100px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:linear-gradient(180deg,var(--bg-0) 0%, var(--bg-1) 100%);
+  color:var(--text);
+  padding:28px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.container{max-width:var(--max-width);margin:0 auto}
+h1{font-size:20px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:var(--gap)}
+.card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+input,select,button,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px}
+input[type="date"]{padding:8px}
+.muted{color:var(--muted);font-size:13px}
+.students-list{max-height:420px;overflow:auto;margin-top:8px}
+.student-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;cursor:pointer}
+.student-row:hover{background:var(--glass)}
+.selected{background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(79,70,229,0.06));border:1px solid rgba(79,70,229,0.18)}
+.small{font-size:12px}
+.row{display:flex;gap:8px}
+.actions{display:flex;gap:8px;margin-top:8px}
+.btn{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px}
+.btn.primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:white}
+.summary{display:flex;gap:10px;align-items:center;margin-top:8px}
+.pill{background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:10px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
+.income{color:var(--success)}
+.expense{color:var(--danger)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.import-input{display:none}
+footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+/* Responsive */
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .card{padding:12px}
+}
+
+/* Utility classes */
+.text-right{text-align:right}
+.flex{display:flex}
+.flex-center{display:flex;align-items:center}
+.flex-gap{gap:8px}
+.mt-8{margin-top:8px}
+.mt-12{margin-top:12px}
+
+/* Accessibility: focus outlines */
+button:focus,input:focus,select:focus,textarea:focus{outline:3px solid rgba(79,70,229,0.18);outline-offset:2px}
+
+/* Tiny animations */
+.student-row, .btn{transition:all 160ms ease}
+
+/* Form helpers */
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:rgba(239,68,68,0.6)}
+
+/* Export button anchor styling if used */
+a.export-link{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);text-decoration:none;color:inherit}
+
+/* Improved scroll for student list */
+.students-list::-webkit-scrollbar{width:8px;height:8px}
+.students-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.04);border-radius:8px}
+
+/* Small screens: compress spacing */
+@media (max-width:420px){
+  body{padding:14px}
+  .grid{gap:10px}
+  .student-row{padding:6px}
+}

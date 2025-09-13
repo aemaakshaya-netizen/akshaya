@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Student Finance Manager — Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f9fafb; margin:0; padding:0; color:#111827; line-height:1.6; }
+    header { background:#2563eb; color:white; padding:20px; text-align:center; }
+    h1 { margin:0; font-size:26px; }
+    .container { max-width:900px; margin:20px auto; padding:20px; background:#fff; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color:#2563eb; margin-top:24px; }
+    ul { margin:10px 0 20px 20px; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius:4px; }
+    footer { text-align:center; padding:12px; font-size:14px; background:#f3f4f6; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Student Finance Manager</h1>
+    <p>Documentation & Detailed Explanation</p>
+  </header>
+
+  <div class="container">
+    <h2>📌 Introduction</h2>
+    <p>The <strong>Student Finance Manager</strong> is a web-based system designed to help students efficiently manage their <em>financial records</em>, <em>expenses</em>, <em>budget planning</em>, and even track their <em>wellness logs</em>.  
+    It provides an interactive dashboard where students can monitor their spending habits alongside their health and study activities.</p>
+
+    <h2>⚙️ Core Modules</h2>
+    <ul>
+      <li><strong>Login & Authentication</strong> – Secure student login with password or social login.</li>
+      <li><strong>Finance Tracking</strong> – Add, edit, and monitor daily/weekly/monthly expenses.</li>
+      <li><strong>Budget Planner</strong> – Define budgets and track progress.</li>
+      <li><strong>Wellness Monitor</strong> – Log sleep, stress, study hours, and exercise activities.</li>
+      <li><strong>Reports & Graphs</strong> – Generate interactive charts for both finance and wellness data.</li>
+    </ul>
+
+    <h2>💻 Technologies Used</h2>
+    <ul>
+      <li><code>HTML5</code> & <code>CSS3</code> – For structure and styling.</li>
+      <li><code>JavaScript</code> – For interactivity and dynamic updates.</li>
+      <li><code>Chart.js</code> – To display finance and wellness data visually.</li>
+      <li><code>Flask / Node.js</code> (optional backend) – To store data and manage authentication.</li>
+    </ul>
+
+    <h2>🚀 Features in Action</h2>
+    <ul>
+      <li>📊 <strong>Interactive Graphs</strong> for expense trends and wellness logs.</li>
+      <li>🔑 <strong>Secure Login</strong> with session/token support.</li>
+      <li>💸 <strong>Expense Categories</strong> like food, books, travel, and fees.</li>
+      <li>🧘 <strong>Wellness Insights</strong> (sleep vs stress balance).</li>
+      <li>📥 <strong>Export Options</strong> (PDF/Excel/PNG reports).</li>
+    </ul>
+
+    <h2>📂 Example Workflow</h2>
+    <ol>
+      <li>Student logs in via the <code>login.html</code> page.</li>
+      <li>They enter daily expenses and view balance updates.</li>
+      <li>They log wellness activities (sleep, exercise, stress).</li>
+      <li>Dashboard combines finance + wellness for better insights.</li>
+      <li>Reports can be exported and shared.</li>
+    </ol>
+
+    <h2>🔒 Security Notes</h2>
+    <p>
+      - Passwords are stored securely (hashed on backend). <br>
+      - Sessions or JWT tokens protect user data. <br>
+      - Logout clears local storage and ends session. <br>
+    </p>
+
+    <h2>📈 Example Integration</h2>
+    <p>Example chart in <code>Chart.js</code> for expenses:</p>
+    <pre><code>
+    const data = {
+      labels: ['Food', 'Books', 'Travel', 'Fees'],
+      datasets: [{ label: 'Expenses', data: [1200, 800, 450, 2000] }]
+    };
+    new Chart(ctx, { type: 'pie', data });
+    </code></pre>
+
+    <h2>✅ Conclusion</h2>
+    <p>The Student Finance Manager simplifies financial and wellness tracking for students in a single dashboard.  
+    It is extendable, secure, and integrates both lifestyle and expense management for holistic student growth.</p>
+  </div>
+
+  <footer>
+    © 2025 Student Finance Manager Project | Documentation Page
+  </footer>
+</body>
+</html>
